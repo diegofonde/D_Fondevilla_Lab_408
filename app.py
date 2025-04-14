@@ -5,20 +5,27 @@ from db_operations import db_operations
 #global variables
 db_ops = db_operations("Rideshare.db") # Connect to database 
 
+#functions
 def startScreen():
-    print("Welcome to your RideShare app!")
+    print("Welcome to your Ride Share app!")
+
+    #db_ops.create_rider_table()
+    #db_ops.create_driver_table()
+    #db_ops.create_ride_table()
 
     print('''Do you have an existing account?:
           1. Yes
           2. No''')
     existing = helper.get_choice([1,2])
-    if existing == 2:
+    if existing == 1:
+        login()
+    elif existing == 2:
         createAccount()
     else: 
-        logIn()
+        print("Invalid input. Select option 1 or 2.")
 
 def createAccount():
-    print('''Do you want a rider account or driver account?:
+    print('''Choose a rider account or driver account:
               1. rider
               2. driver''')
     account = helper.get_choice([1,2])
@@ -36,7 +43,7 @@ def createAccount():
         newID = {"newID": length}
         db_ops.modify_query_params(query, newID)
         print("Account has successfully been created! Your riderID is ", length)
-    else: 
+    elif account == 2: 
         query = '''
         SELECT *
         FROM driver
@@ -44,23 +51,27 @@ def createAccount():
         length = len(db_ops.select_query(query)) + 1
 
         query = '''
-        INSERT INTO driver(driverID, driver_mode, avg_rating, num_ratings)
-        VALUES(:newID, TRUE, null, 0)
+        INSERT INTO driver(driverID, driverMode, avgRating)
+        VALUES(newID, TRUE, null))
         '''
         newID = {"newID": length}
         db_ops.modify_query_params(query, newID)
         print("Account has successfully been created! Your driverID is ", length)
+    else:
+        print("Invalid input. Select option 1 or 2.")
 
-def logIn():
+def login():
     print('''Are you logging into a rider account or driver account?:
               1. rider
               2. driver''')
     account = helper.get_choice([1,2])
     if account == 1:
-        print("rider log in")
+        #riderLog()
+        print("rider log")
     else:
         driverLog()
 
+# for driver users
 def driverLog():
     ID = input("Please enter your driverID: ")
     while True:
@@ -72,7 +83,7 @@ def driverLog():
         option = helper.get_choice([1,2,3,4])
         if option == 1:
             query = '''
-            SELECT avg_rating
+            SELECT avgRating
             FROM driver
             WHERE driverID =:driveID
             '''
@@ -106,7 +117,7 @@ def driverLog():
             if option == 1:
                 query = '''
                 UPDATE driver
-                SET driver_mode = TRUE
+                SET driverMode = TRUE
                 WHERE driverID =:driveID
                 '''
                 driverID = {"driveID":ID}
@@ -114,7 +125,7 @@ def driverLog():
             else: 
                 query = '''
                 UPDATE driver
-                SET driver_mode = FALSE
+                SET driverMode = FALSE
                 WHERE driverID =:driveID
                 '''
                 driverID = {"driveID":ID}
@@ -122,5 +133,56 @@ def driverLog():
         elif option == 4:
             print("Goodbye!")
             break
-    
+
+# for rider users 
+# def riderLog():
+#     ID = input("Please enter your driverID: ")
+#     while True:
+#         print('''Select from the following options:
+#               1. View rides
+#               2. Find an active driver
+#               3. Exit''')
+#         option = helper.get_choice([1,2,3])
+        
+#         # 1. view rides
+#         if option == 1:
+#             query = '''
+#                 SELECT *
+#                 FROM ride
+#                 WHERE riderID = %s
+#             '''
+#             driverID = {"driverID": ID}
+#             rides = db_ops.select_query_params(query, driverID)
+#             if rides:
+#                 print("Your Ride History:")
+#                 helper.pretty_print(rides)
+#             else:
+#                 print("No previous rides found.")
+#         # 2. find an active driver
+#         elif option == 2:
+#             query = '''
+#                 SELECT driverID
+#                 FROM driver
+#                 WHERE driverMode = TRUE
+#             '''
+#             drivers = db_ops.select_query(query)
+#             if not drivers:
+#                 print("No drivers available at the moment.")
+#             driverID = drivers[0][0]
+#             pickup = input("Enter pick-up location: ")
+#             dropoff = input("Enter drop-off location: ")
+
+#             query = '''
+#                 INSERT INTO ride(rideID, pickupLocation, dropoffLocation, rating, riderID, driverID)
+#                 VALUES(%s, %s, %s, %s, %s, %s)
+#             '''
+#             # fix
+#             params = (rideID, pickup, dropoff, None, riderID, driverID)
+#             db_ops.modify_query_params(query, params)
+#         # 3. exit
+#         elif option == 3:
+#             print("Return to options...")
+#             break
+
+# main method 
 startScreen()
