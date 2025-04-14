@@ -1,10 +1,15 @@
-import sqlite3
+import mysql.connector
 from helper import helper
 
 class db_operations():
     # constructor with connection path to DB
     def __init__(self, conn_path):
-        self.connection = sqlite3.connect(conn_path)
+        self.connection = mysql.connector.connect(host="localhost",
+            user="root",
+            #REPLACE WITH YOUR PASSWORD!!!
+            password="insert_password",
+            auth_plugin='mysql_native_password',
+            database="Rideshare")
         self.cursor = self.connection.cursor()
         print("connection made..")
 
@@ -77,42 +82,83 @@ class db_operations():
         self.cursor.executemany(query, data)
         self.connection.commit()
     
-    # function that creates table songs in our database
-    def create_songs_table(self):
+    # function that creates table rider in our database
+    def create_rider_table(self):
         query = '''
-        CREATE TABLE songs(
-            songID VARCHAR(22) NOT NULL PRIMARY KEY,
-            Name VARCHAR(20),
-            Artist VARCHAR(20),
-            Album VARCHAR(20),
-            releaseDate DATETIME,
-            Genre VARCHAR(20),
-            Explicit BOOLEAN,
-            Duration DOUBLE,
-            Energy DOUBLE,
-            Danceability DOUBLE,
-            Acousticness DOUBLE,
-            Liveness DOUBLE,
-            Loudness DOUBLE
+        CREATE TABLE rider(
+            riderID INT NOT NULL PRIMARY KEY
         );
         '''
         self.cursor.execute(query)
-        print('Table Created')
+        print('Rider Table Created')
 
-    # function that returns if table has records
-    def is_songs_empty(self):
-        #query to get count of songs in table
+    # function that creates table driver in our database
+    def create_driver_table(self):
+        query = '''
+        CREATE TABLE driver(
+            driverID INT NOT NULL PRIMARY KEY,
+            driverMode BOOLEAN,
+            avgRating FLOAT
+        );
+        '''
+        self.cursor.execute(query)
+        print('Driver Table Created')
+
+    # function that creates table ride in our database
+    def create_ride_table(self):
+        query = '''
+        CREATE TABLE ride(
+            rideID INT NOT NULL PRIMARY KEY,
+            pickupLocation VARCHAR(25),
+            dropoffLocation VARCHAR(25),
+            rating FLOAT,
+            riderID INT,
+            driverID INT
+
+            FOREIGN KEY (riderID) REFERENCES Rider(riderID)
+            FOREIGN KEY (driverID) REFERENCES Driver(driverID)
+        );
+        '''
+        self.cursor.execute(query)
+        print('Ride Table Created')
+
+    # function that returns if rider table has records
+    def is_rider_empty(self):
+        #query to get count of riders in table
         query = '''
         SELECT COUNT(*)
-        FROM songs;
+        FROM rider;
         '''
         #run query and return value
         result = self.single_record(query)
         return result == 0
 
-    # function to populate songs table given some path
+    # function that returns if driver table has records
+    def is_rider_empty(self):
+        #query to get count of drivers in table
+        query = '''
+        SELECT COUNT(*)
+        FROM driver;
+        '''
+        #run query and return value
+        result = self.single_record(query)
+        return result == 0
+
+    # function that returns if rider table has records
+    def is_ride_empty(self):
+        #query to get count of rides in table
+        query = '''
+        SELECT COUNT(*)
+        FROM ride;
+        '''
+        #run query and return value
+        result = self.single_record(query)
+        return result == 0
+
+    ## CHANGE/FIX!!!!
+    # function to populate rider table given some path
     # to a CSV containing records
-    def populate_songs_table(self, filepath):
+    def populate_rider_table(self, filepath):
         if self.is_songs_empty():
             data = helper.data_cleaner(filepath)
             attribute_count = len(data[0])
