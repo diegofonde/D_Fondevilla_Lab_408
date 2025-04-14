@@ -3,7 +3,7 @@ from helper import helper
 from db_operations import db_operations
 
 #global variables
-db_ops = db_operations("Rideshare.db")
+db_ops = db_operations("Rideshare.db") # Connect to database 
 
 def startScreen():
     print("Welcome to your RideShare app!")
@@ -84,7 +84,19 @@ def driverLog():
             else:
                 print("Your rating is ", ratings[0][0])
         elif option == 2:
-            print("view rides")
+            query = '''
+            SELECT * 
+            FROM driver
+            INNER JOIN ride
+            ON driver.driverID = ride.driverID
+            WHERE driver.driverID =:driveID
+            '''
+            driverID = {"driveID":ID}
+            ride_list = db_ops.select_query_params(query, driverID)
+
+            for row in ride_list:
+                print(row)
+
         elif option == 3:
             print('''Do you want to activate or deactivate your account?:
               1. Activate
@@ -98,7 +110,7 @@ def driverLog():
                 WHERE driverID =:driveID
                 '''
                 driverID = {"driveID":ID}
-                db_ops.select_query_params(query, driverID)
+                db_ops.modify_query_params(query, driverID)
             else: 
                 query = '''
                 UPDATE driver
